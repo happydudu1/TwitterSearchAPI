@@ -12,6 +12,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Scanner;
 
@@ -80,9 +82,7 @@ public class TwitterSearch {
 				
 			// Parse the JSON response into a JSON mapped object to fetch fields from.
 			JSONObject obj = (JSONObject)JSONValue.parse(readResponse(connection));
-			log.debug("json Response of the bearer oauth request : " + obj);
-	           
-    		
+			 
 			if (obj != null) {
 				String tokenType = (String)obj.get("token_type");
 				String token = (String)obj.get("access_token");
@@ -92,7 +92,6 @@ public class TwitterSearch {
 				 
 	            if (connection.getResponseCode() == HttpURLConnection.HTTP_FORBIDDEN) {
 	                log.error("HTTP 403 (Forbidden) returned from Twitter API call for bearer token. Check values of Consumer Key and Consumer Secret in tokens.properties");
-	               // throw new RejectedAuthorizationException("","HTTP 403 (Forbidden) returned attempting to get Twitter API bearer token");
 	            }
 			}
 			return new String();
@@ -113,9 +112,9 @@ public class TwitterSearch {
 	 * @param endPointUrl
 	 * @throws IOException
 	 */
-	private void getAndPrintSearchResult(String endPointUrl, String bearerToken) throws IOException {
+	private List<String> getSearchResult(String endPointUrl, String bearerToken) throws IOException {
 		HttpsURLConnection connection = null;
-					
+		List<String> res=new ArrayList<String>();			
 		try {
 			URL url = new URL(endPointUrl); 
 			connection = (HttpsURLConnection) url.openConnection();           
@@ -135,12 +134,11 @@ public class TwitterSearch {
 				{
 					String loc=(String)(( (JSONObject)((JSONObject)arr.get(i)).get("user")).get("location"));
 					if (loc!=null&&!loc.equals("")){
-						System.out.println(loc);
+						res.add(loc);
 					}
 				}		 
-			}else{
-				System.out.println("no result found!");
 			} 
+			return res;
 		 
 		}
 		catch (MalformedURLException e) {
@@ -204,7 +202,16 @@ public class TwitterSearch {
 				String line = in.nextLine();  
 				String url = "https://api.twitter.com/1.1/search/tweets.json?q=" + URLEncoder.encode(line, "UTF-8");
 		 
-				ts.getAndPrintSearchResult(url, ts.requestBearerToken(endPointUrl));
+				List<String> res= ts.getSearchResult(url, ts.requestBearerToken(endPointUrl));
+				if (res.size()>0){
+					System.out.println("USER LOCATIONS:");
+					System.out.println("===========================");
+					for(String l:res){
+						System.out.println(l);
+					}
+				}else{
+					System.out.println("NO USER SEARCHED: "+ line);
+				}
 				
 			} catch (IOException e) {
 				 
