@@ -1,4 +1,4 @@
-package twitterSearch.searchAPI;
+package com.twitter.search.api;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -24,22 +24,21 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 
-/**
- * Hello world!
- *
- */
-public class TwitterSearch 
-{
-	private static Logger log = Logger.getLogger(TwitterSearch.class);
+
+public class TwitterSearch {
+	private final static Logger log = Logger.getLogger(TwitterSearch.class);
 	
-	public static String consumerKey="3GqepHyVqOa72qKNl7vIMccip";
-	public static String consumerSecret="WUqXaXuWqgO8NPeL3x6Z21GUlpMxXuZtrJeWqVp9R39CO2kcEO";
-	public static String bearerToken="";
-	public static String userAgent="testSearchAPI2015";
-			
- 
-	// Encodes the consumer key and secret to create the basic authorization key
-	private static String encodeKeys(String consumerKey, String consumerSecret) {
+	private final String CONSUMER_KEY="3GqepHyVqOa72qKNl7vIMccip";
+	private final String CONSUMER_SECRET="WUqXaXuWqgO8NPeL3x6Z21GUlpMxXuZtrJeWqVp9R39CO2kcEO";
+	private final String USER_AGENT="testSearchAPI2015";
+	
+	/**
+	 * Encodes the consumer key and secret to create the basic authorization key
+	 * @param consumerKey
+	 * @param consumerSecret
+	 * @return String
+	 */
+	private String encodeKeys(String consumerKey, String consumerSecret) {
 		try {
 			String encodedConsumerKey = URLEncoder.encode(consumerKey, "UTF-8");
 			String encodedConsumerSecret = URLEncoder.encode(consumerSecret, "UTF-8");
@@ -53,10 +52,15 @@ public class TwitterSearch
 		}
 	}
 	
-	// Constructs the request for requesting a bearer token and returns that token as a string
-	private static String requestBearerToken(String endPointUrl) throws IOException {
+	/**
+	 * Constructs the request for requesting a bearer token and returns that token as a string
+	 * @param endPointUrl
+	 * @return
+	 * @throws IOException
+	 */
+	private String requestBearerToken(String endPointUrl) throws IOException {
 		HttpsURLConnection connection = null;
-		String encodedCredentials = encodeKeys(consumerKey,consumerSecret);
+		String encodedCredentials = encodeKeys(CONSUMER_KEY,CONSUMER_SECRET);
 			
 		try {
 			URL url = new URL(endPointUrl); 
@@ -65,7 +69,7 @@ public class TwitterSearch
 			connection.setDoInput(true); 
 			connection.setRequestMethod("POST"); 
 			connection.setRequestProperty("Host", "api.twitter.com");
-		    connection.setRequestProperty("User-Agent", userAgent);
+		    connection.setRequestProperty("User-Agent", USER_AGENT);
 			
 			connection.setRequestProperty("Authorization", "Basic " + encodedCredentials);
 			connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8"); 
@@ -103,8 +107,13 @@ public class TwitterSearch
 		}
 	}
 	
-	//fetch result 
-	private static void getAndPrintSearchResult(String endPointUrl) throws IOException {
+	
+	/**
+	 * fetch result 
+	 * @param endPointUrl
+	 * @throws IOException
+	 */
+	private void getAndPrintSearchResult(String endPointUrl, String bearerToken) throws IOException {
 		HttpsURLConnection connection = null;
 					
 		try {
@@ -113,7 +122,7 @@ public class TwitterSearch
 			connection.setDoInput(true); 
 			connection.setRequestMethod("GET"); 
 			connection.setRequestProperty("Host", "api.twitter.com");
-      	    connection.setRequestProperty("User-Agent", userAgent);
+      	    connection.setRequestProperty("User-Agent", USER_AGENT);
 			 
 			connection.setRequestProperty("Authorization", "Bearer " + bearerToken);
 			connection.setUseCaches(false);
@@ -143,8 +152,14 @@ public class TwitterSearch
 			}
 		}
 	}
-	// Writes a request to a connection
-	private static boolean writeRequest(HttpsURLConnection connection, String textBody) {
+	
+	/**
+	 * Writes a request to a connection
+	 * @param connection
+	 * @param textBody
+	 * @return
+	 */
+	private boolean writeRequest(HttpsURLConnection connection, String textBody) {
 		try {
 			BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(connection.getOutputStream()));
 			wr.write(textBody);
@@ -157,7 +172,11 @@ public class TwitterSearch
 	}
 		
 		
-	// Reads a response for a given connection and returns it as a string.
+	/**
+	 * Reads a response for a given connection and returns it as a string.
+	 * @param connection
+	 * @return
+	 */
 	private static String readResponse(HttpsURLConnection connection) {
 		try {
 			StringBuilder str = new StringBuilder();
@@ -174,17 +193,19 @@ public class TwitterSearch
 	 }
 	
 		public static void main( String[] args ){
-			String endPointUrl="https://api.twitter.com/oauth2/token";
+			final String endPointUrl="https://api.twitter.com/oauth2/token";
+			
+			TwitterSearch ts = new TwitterSearch();
+			
 			try {
-				bearerToken=requestBearerToken(endPointUrl);
-			 
-				Scanner in = new Scanner(System.in);
-
 				System.out.println("Enter Celbrity Name: ");
+				
+				Scanner in = new Scanner(System.in);
 				String line = in.nextLine();  
 				String url = "https://api.twitter.com/1.1/search/tweets.json?q=" + URLEncoder.encode(line, "UTF-8");
 		 
-				getAndPrintSearchResult(url);
+				ts.getAndPrintSearchResult(url, ts.requestBearerToken(endPointUrl));
+				
 			} catch (IOException e) {
 				 
 				e.printStackTrace();

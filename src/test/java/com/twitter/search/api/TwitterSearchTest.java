@@ -1,4 +1,4 @@
-package twitterSearch.searchAPI;
+package com.twitter.search.api;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
